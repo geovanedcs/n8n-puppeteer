@@ -5,15 +5,19 @@ on:
   # Executa diariamente às 2h da manhã UTC para verificar atualizações
   schedule:
     - cron: '0 2 * * *'
-  
+
   # Permite execução manual
   workflow_dispatch:
-  
-  # Executa quando há push no main/master
+
+  # Executa quando há push no main/master ou mudanças no Dockerfile
   push:
     branches:
       - main
       - master
+    paths:
+      - Dockerfile
+      - .github/workflows/build-n8n-puppeteer.yml
+      - '**/Dockerfile'
 
 jobs:
   check-and-build:
