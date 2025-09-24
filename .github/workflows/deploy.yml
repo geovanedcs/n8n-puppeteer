@@ -18,7 +18,9 @@ jobs:
           script: |
             cd /home/ubuntu/n8n-app
             git pull origin main
-            docker rm -f certbot watchtower || true
+            # Remove todos os containers baseados nas imagens problemáticas
+            docker ps -a --filter ancestor=certbot/certbot --format '{{.ID}}' | xargs -r docker rm -f
+            docker ps -a --filter ancestor=containrrr/watchtower --format '{{.ID}}' | xargs -r docker rm -f
             docker rmi certbot/certbot containrrr/watchtower || true
             docker-compose pull
             docker-compose up -d
