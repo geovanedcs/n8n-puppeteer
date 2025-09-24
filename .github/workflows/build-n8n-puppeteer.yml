@@ -43,17 +43,29 @@ jobs:
           LATEST_VERSION=$(curl -s https://registry.hub.docker.com/v2/repositories/n8nio/n8n/tags?page_size=100 | jq -r '.results[] | select(.name | test("^[0-9]+\\.[0-9]+\\.[0-9]+$")) | .name' | sort -V | tail -1)
           echo "latest=$LATEST_VERSION" >> $GITHUB_OUTPUT
           echo "Versão mais recente do n8n: $LATEST_VERSION"
+
+      - name: Check if Dockerfile changed
+        id: dockerfile-changed
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q 'Dockerfile'; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
       
       - name: Check if we need to build
         id: should-build
         run: |
-          # Verifica se já temos uma imagem com esta versão
           DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}"
           IMAGE_NAME="n8n-puppeteer"
           LATEST_VERSION="${{ steps.n8n-version.outputs.latest }}"
-          
-          # Verifica se a tag já existe no Docker Hub
-          if curl -s -f "https://registry.hub.docker.com/v2/repositories/${DOCKER_USERNAME}/${IMAGE_NAME}/tags/${LATEST_VERSION}/" > /dev/null; then
+          DOCKERFILE_CHANGED="${{ steps.dockerfile-changed.outputs.changed }}"
+          # Se o Dockerfile mudou, sempre builda
+          if [ "$DOCKERFILE_CHANGED" = "true" ]; then
+            echo "build=true" >> $GITHUB_OUTPUT
+            echo "Dockerfile mudou. Iniciando build..."
+          # Senão, verifica se a tag já existe no Docker Hub
+          elif curl -s -f "https://registry.hub.docker.com/v2/repositories/${DOCKER_USERNAME}/${IMAGE_NAME}/tags/${LATEST_VERSION}/" > /dev/null; then
             echo "build=false" >> $GITHUB_OUTPUT
             echo "Imagem ${LATEST_VERSION} já existe. Não é necessário rebuild."
           else
