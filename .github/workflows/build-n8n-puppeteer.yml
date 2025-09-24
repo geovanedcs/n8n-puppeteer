@@ -77,6 +77,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/n8n-puppeteer:latest
             ${{ secrets.DOCKER_USERNAME }}/n8n-puppeteer:${{ steps.n8n-version.outputs.latest }}
+            ${{ secrets.DOCKER_USERNAME }}/n8n-puppeteer:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
