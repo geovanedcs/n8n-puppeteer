@@ -19,8 +19,11 @@ RUN apk add --no-cache \
 # Instala Puppeteer e plugins
 RUN npm install -g puppeteer puppeteer-extra puppeteer-extra-plugin-stealth puppeteer-extra-plugin-user-preferences puppeteer-extra-plugin-user-data-dir
 
-# Instala Playwright para Python e suas dependências
-RUN pip3 install --no-cache-dir playwright && python3 -m playwright install --with-deps
+# Instala Playwright para Python e suas dependências em um venv
+RUN python3 -m venv /venv \
+    && . /venv/bin/activate \
+    && pip install --no-cache-dir playwright \
+    && /venv/bin/python -m playwright install --with-deps
 
 USER node
 
