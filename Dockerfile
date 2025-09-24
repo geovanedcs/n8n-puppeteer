@@ -6,36 +6,46 @@ LABEL description="N8N com Puppeteer e Playwright para automação web"
 
 USER root
 
-# Instala dependências mínimas
+# Instala apenas dependências essenciais para Alpine
 RUN apk add --no-cache \
     python3 \
+    python3-dev \
     py3-pip \
-    py3-setuptools \
+    build-base \
+    gcc \
+    musl-dev \
+    libffi-dev \
     git \
     curl
 
-# Instala Puppeteer
-RUN npm install -g puppeteer
+# Instala Puppeteer e plugins
+RUN npm install -g puppeteer puppeteer-extra puppeteer-extra-plugin-stealth puppeteer-extra-plugin-user-preferences puppeteer-extra-plugin-user-data-dir
 
-# Cria virtual environment
-RUN python3 -m venv /opt/playwright-env
+# Cria venv e instala playwright em etapas separadas
+RUN python3 -m venv /venv
 
-# Instala playwright no venv
-RUN /opt/playwright-env/bin/pip install --upgrade pip && \
-    /opt/playwright-env/bin/pip install playwright
+# Atualiza pip dentro do venv (sem usar pip global)
+RUN /venv/bin/pip install --upgrade pip
 
-# Instala apenas chromium (mais leve)
-RUN /opt/playwright-env/bin/playwright install chromium
+# Instala playwright
+RUN /venv/bin/pip install playwright
 
-# Cria link simbólico para facilitar acesso
-RUN ln -s /opt/playwright-env/bin/python /usr/local/bin/python-playwright && \
-    ln -s /opt/playwright-env/bin/playwright /usr/local/bin/playwright
+# Instala apenas chromium para reduzir tamanho
+RUN /venv/bin/python -m playwright install chromium
 
-# Ajusta permissões
-RUN chown -R node:node /opt/playwright-env
+# Limpa cache e arquivos temporários para reduzir tamanho da imagem
+RUN apk del python3-dev build-base gcc musl-dev libffi-dev \
+    && rm -rf /var/cache/apk/* /tmp/* /root/.cache /root/.npm
 
-# Remove cache para reduzir tamanho
-RUN rm -rf /var/cache/apk/* /tmp/*
+# Define variáveis de ambiente
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# Torna o venv disponível para o usuário node
+RUN chown -R node:node /venv
+
+# Cria script wrapper para facilitar uso do python com venv
+RUN echo '#!/bin/sh\nexec /venv/bin/python "$@"' > /usr/local/bin/python-playwright \
+    && chmod +x /usr/local/bin/python-playwright
 
 USER node
 
