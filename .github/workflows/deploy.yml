@@ -16,6 +16,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /home/ubuntu/n8n
+            cd /home/ubuntu/n8n-app
             git pull origin main
             docker-compose up -d

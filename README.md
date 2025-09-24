@@ -23,14 +23,15 @@ Imagem Docker personalizada do N8N com Puppeteer e dependências para automaçã
 
 ## Deploy automático
 
-O deploy é feito automaticamente via GitHub Actions para o servidor em `/home/ubuntu/n8n`.
+
+O deploy é feito automaticamente via GitHub Actions para o servidor em `/home/ubuntu/n8n-app`.
 
 ### Como configurar o servidor
 
-1. Clone este repositório em `/home/ubuntu/n8n`:
-  ```bash
-  git clone https://github.com/geovanedcs/n8n-puppeteer.git /home/ubuntu/n8n
-````
+1. Clone este repositório em `/home/ubuntu/n8n-app`:
+   ```bash
+   git clone https://github.com/geovanedcs/n8n-puppeteer.git /home/ubuntu/n8n-app
+   ```
 
 2. Gere uma chave SSH e adicione a pública nas _Deploy Keys_ do GitHub.
 3. Adicione as secrets no repositório:
@@ -70,3 +71,4 @@ git checkout -b feature/nome-da-feature
 ```
 
 2. Faça commits e abra um Pull Request para `develop`.
+````
