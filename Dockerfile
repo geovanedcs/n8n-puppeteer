@@ -11,7 +11,8 @@ USER root
 RUN apk add --no-cache \
     python3 \
     py3-pip \
-    fonts-freefont-ttf \
+    font-noto \
+    fontconfig \
     git \
     curl
 
