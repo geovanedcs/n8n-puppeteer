@@ -2,32 +2,28 @@
 FROM n8nio/n8n
 
 LABEL maintainer="geovane@alunos.utfpr.edu.br"
-LABEL description="N8N com Playwright para automação web"
+LABEL description="N8N com Playwright usando Chromium do sistema"
 
 USER root
 
-# Instala apenas dependências essenciais
+# Instala dependências essenciais e Chromium do sistema Alpine
 RUN apk add --no-cache \
     git \
-    curl
-
-# Instala Playwright
-RUN npm install -g playwright
-
-# Instala browser Chromium com dependências
-RUN npx playwright install chromium --with-deps
-
-# Instala dependências extras do sistema para Chromium no Alpine
-RUN apk add --no-cache \
+    curl \
     chromium \
     nss \
     freetype \
     harfbuzz \
     ca-certificates \
     ttf-freefont \
+    libstdc++ \
     && rm -rf /var/cache/apk/*
 
-# Define variáveis de ambiente para Playwright
+# Instala Playwright
+RUN npm install -g playwright
+
+# NÃO instala browsers do Playwright, usa o do sistema
+# Define variável para usar Chromium do sistema
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
