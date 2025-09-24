@@ -7,14 +7,13 @@ LABEL description="N8N com Puppeteer e Playwright para automação web"
 
 USER root
 
-# Instala dependências do sistema e Python
-RUN apt-get update && apt-get install -y \
+# Instala dependências do sistema e Python (Alpine)
+RUN apk add --no-cache \
     python3 \
-    python3-pip \
+    py3-pip \
     fonts-freefont-ttf \
     git \
-    curl \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    curl
 
 # Instala Puppeteer e plugins
 RUN npm install -g puppeteer puppeteer-extra puppeteer-extra-plugin-stealth puppeteer-extra-plugin-user-preferences puppeteer-extra-plugin-user-data-dir
