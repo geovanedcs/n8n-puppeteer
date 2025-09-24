@@ -12,7 +12,8 @@ services:
       - NODE_ENV=production
       - WEBHOOK_URL=https://geedcs.duckdns.org/
       - GENERIC_TIMEZONE=America/Sao_Paulo
-      - NODE_FUNCTION_ALLOW_EXTERNAL=puppeteer,puppeteer-extra,puppeteer-extra-plugin-stealth,puppeteer-extra-plugin-user-preferences,puppeteer-extra-plugin-user-data-dir
+      # APENAS PLAYWRIGHT (mais limpo)
+      - NODE_FUNCTION_ALLOW_EXTERNAL=playwright
 
       # --- CONFIGURAÇÕES DE PERFORMANCE E SEGURANÇA ---
       - N8N_ENCRYPTION_KEY='ff0h/OkaDXGNsmnPLarTFK6Cx0N4cDlg'
