@@ -1,0 +1,70 @@
+version: '3.7'
+services:
+  n8n:
+    image: seu-usuario-dockerhub/n8n-puppeteer:latest
+    container_name: n8n
+    restart: always
+    environment:
+      - N8N_HOST=geedcs.duckdns.org
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=https://geedcs.duckdns.org/
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+      - NODE_FUNCTION_ALLOW_EXTERNAL=puppeteer,puppeteer-extra,puppeteer-extra-plugin-stealth,puppeteer-extra-plugin-user-preferences,puppeteer-extra-plugin-user-data-dir
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - n8n-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+  
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-conf:/etc/nginx/conf.d
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    depends_on:
+      - n8n
+    networks:
+      - n8n-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+  
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+  
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=3600
+      - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_INCLUDE_RESTARTING=true
+      - TZ=America/Sao_Paulo
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+volumes:
+  n8n_data:
+    driver: local
+
+networks:
+  n8n-network:
+    driver: bridge

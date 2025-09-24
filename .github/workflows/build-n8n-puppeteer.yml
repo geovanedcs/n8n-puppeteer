@@ -1,0 +1,84 @@
+# .github/workflows/build-n8n-puppeteer.yml
+name: Build and Push N8N with Puppeteer
+
+on:
+  # Executa diariamente às 2h da manhã UTC para verificar atualizações
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # Permite execução manual
+  workflow_dispatch:
+  
+  # Executa quando há push no main/master
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Get current n8n version
+        id: n8n-version
+        run: |
+          # Pega a versão mais recente do n8n no Docker Hub
+          LATEST_VERSION=$(curl -s https://registry.hub.docker.com/v2/repositories/n8nio/n8n/tags?page_size=100 | jq -r '.results[] | select(.name | test("^[0-9]+\\.[0-9]+\\.[0-9]+$")) | .name' | sort -V | tail -1)
+          echo "latest=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "Versão mais recente do n8n: $LATEST_VERSION"
+      
+      - name: Check if we need to build
+        id: should-build
+        run: |
+          # Verifica se já temos uma imagem com esta versão
+          DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}"
+          IMAGE_NAME="n8n-puppeteer"
+          LATEST_VERSION="${{ steps.n8n-version.outputs.latest }}"
+          
+          # Verifica se a tag já existe no Docker Hub
+          if curl -s -f "https://registry.hub.docker.com/v2/repositories/${DOCKER_USERNAME}/${IMAGE_NAME}/tags/${LATEST_VERSION}/" > /dev/null; then
+            echo "build=false" >> $GITHUB_OUTPUT
+            echo "Imagem ${LATEST_VERSION} já existe. Não é necessário rebuild."
+          else
+            echo "build=true" >> $GITHUB_OUTPUT
+            echo "Imagem ${LATEST_VERSION} não existe. Iniciando build..."
+          fi
+      
+      - name: Update Dockerfile with latest version
+        if: steps.should-build.outputs.build == 'true'
+        run: |
+          LATEST_VERSION="${{ steps.n8n-version.outputs.latest }}"
+          sed -i "s/FROM n8nio\/n8n$/FROM n8nio\/n8n:${LATEST_VERSION}/" Dockerfile
+      
+      - name: Build and push Docker image
+        if: steps.should-build.outputs.build == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/n8n-puppeteer:latest
+            ${{ secrets.DOCKER_USERNAME }}/n8n-puppeteer:${{ steps.n8n-version.outputs.latest }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Trigger Watchtower update (opcional)
+        if: steps.should-build.outputs.build == 'true'
+        run: |
+          echo "Nova versão ${{ steps.n8n-version.outputs.latest }} foi publicada!"
+          # Opcional: você pode adicionar aqui uma chamada webhook para notificar seu servidor
+          # curl -X POST "https://seu-servidor.com/webhook/update" -H "Authorization: Bearer ${{ secrets.WEBHOOK_TOKEN }}"
