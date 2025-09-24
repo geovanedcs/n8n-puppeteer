@@ -6,7 +6,7 @@ services:
     container_name: n8n
     restart: always
     environment:
-      - N8N_HOST=geedcs.duckdns.org
+      - N8N_HOST=0.0.0.0
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
       - NODE_ENV=production
