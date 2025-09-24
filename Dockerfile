@@ -13,6 +13,7 @@ RUN apk add --no-cache \
     udev \
     ttf-freefont \
     chromium \
+    curl \
     && rm -rf /var/cache/apk/*
 
 # Configurações do Puppeteer
