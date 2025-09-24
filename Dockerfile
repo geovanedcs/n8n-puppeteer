@@ -6,45 +6,36 @@ LABEL description="N8N com Puppeteer e Playwright para automação web"
 
 USER root
 
-# Instala dependências do sistema completas para Alpine
+# Instala dependências mínimas
 RUN apk add --no-cache \
     python3 \
-    python3-dev \
     py3-pip \
     py3-setuptools \
-    py3-wheel \
-    build-base \
-    gcc \
-    musl-dev \
-    libffi-dev \
-    openssl-dev \
-    font-noto \
-    fontconfig \
     git \
-    curl \
-    chromium \
-    chromium-chromedriver \
-    firefox
+    curl
 
-# Atualiza pip para versão mais recente
-RUN python3 -m pip install --upgrade pip
+# Instala Puppeteer
+RUN npm install -g puppeteer
 
-# Instala Puppeteer e plugins
-RUN npm install -g puppeteer puppeteer-extra puppeteer-extra-plugin-stealth puppeteer-extra-plugin-user-preferences puppeteer-extra-plugin-user-data-dir
+# Cria virtual environment
+RUN python3 -m venv /opt/playwright-env
 
-# Instala Playwright para Python e suas dependências em um venv
-RUN python3 -m venv /venv \
-    && . /venv/bin/activate \
-    && pip install --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir playwright \
-    && /venv/bin/python -m playwright install --with-deps
+# Instala playwright no venv
+RUN /opt/playwright-env/bin/pip install --upgrade pip && \
+    /opt/playwright-env/bin/pip install playwright
 
-# Define variáveis de ambiente para Playwright
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+# Instala apenas chromium (mais leve)
+RUN /opt/playwright-env/bin/playwright install chromium
 
-# Torna o venv disponível para o usuário node
-RUN chown -R node:node /venv
+# Cria link simbólico para facilitar acesso
+RUN ln -s /opt/playwright-env/bin/python /usr/local/bin/python-playwright && \
+    ln -s /opt/playwright-env/bin/playwright /usr/local/bin/playwright
+
+# Ajusta permissões
+RUN chown -R node:node /opt/playwright-env
+
+# Remove cache para reduzir tamanho
+RUN rm -rf /var/cache/apk/* /tmp/*
 
 USER node
 
