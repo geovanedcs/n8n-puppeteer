@@ -1,4 +1,5 @@
 # Começamos com a imagem oficial do n8n como base
+# Atualização forçada em 24/09/2025 para rebuild da imagem
 FROM n8nio/n8n
 
 # Metadata
