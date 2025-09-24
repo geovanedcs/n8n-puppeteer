@@ -21,7 +21,7 @@ RUN apk add --no-cache \
     && rm -rf /var/cache/apk/*
 
 # Instala Playwright para Python e suas dependências
-RUN pip3 install --no-cache-dir playwright && playwright install --with-deps
+RUN pip3 install --no-cache-dir --break-system-packages playwright && playwright install --with-deps
 
 # Configurações do Puppeteer
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
