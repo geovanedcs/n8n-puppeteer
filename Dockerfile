@@ -8,13 +8,19 @@ LABEL description="N8N com Puppeteer e dependências para automação web"
 # Trocamos para o usuário root para poder instalar pacotes
 USER root
 
-# Instala dependências do sistema em uma única camada
+
+# Instala dependências do sistema e Python para Playwright
 RUN apk add --no-cache \
     udev \
     ttf-freefont \
     chromium \
     curl \
+    python3 \
+    py3-pip \
     && rm -rf /var/cache/apk/*
+
+# Instala Playwright para Python e suas dependências
+RUN pip3 install --no-cache-dir playwright && playwright install --with-deps
 
 # Configurações do Puppeteer
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \

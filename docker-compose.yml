@@ -22,24 +22,19 @@ services:
       - N8N_RUNNERS_ENABLED=true
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
+      - NODE_OPTIONS=--max-old-space-size=512
+      - N8N_RUNNERS_MAX_OLD_SPACE_SIZE=512
 
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
       - n8n-network
-  certbot-renew:
-    image: certbot/certbot
-    container_name: certbot-renew
-    entrypoint: ["/bin/sh", "-c", "while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h; done"]
-    volumes:
-      - ./certbot/www:/var/www/certbot
-      - ./certbot/conf:/etc/letsencrypt
-    depends_on:
-      - nginx
-    networks:
-      - n8n-network
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+        reservations:
+          memory: 256m
 
   nginx:
     image: nginx:latest
