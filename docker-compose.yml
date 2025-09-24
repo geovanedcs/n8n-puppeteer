@@ -1,4 +1,5 @@
 version: '3.7'
+
 services:
   n8n:
     image: geovanedcs/n8n-puppeteer:latest
@@ -12,13 +13,23 @@ services:
       - WEBHOOK_URL=https://geedcs.duckdns.org/
       - GENERIC_TIMEZONE=America/Sao_Paulo
       - NODE_FUNCTION_ALLOW_EXTERNAL=puppeteer,puppeteer-extra,puppeteer-extra-plugin-stealth,puppeteer-extra-plugin-user-preferences,puppeteer-extra-plugin-user-data-dir
+
+      # --- CONFIGURAÇÕES DE PERFORMANCE E SEGURANÇA ---
+      - N8N_ENCRYPTION_KEY='ff0h/OkaDXGNsmnPLarTFK6Cx0N4cDlg'
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_TRUST_PROXY=true
+      - DB_SQLITE_POOL_SIZE=5
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
+
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
       - n8n-network
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-  
+
   nginx:
     image: nginx:latest
     container_name: nginx
@@ -36,7 +47,7 @@ services:
       - n8n-network
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-  
+
   certbot:
     image: certbot/certbot
     container_name: certbot
@@ -45,7 +56,7 @@ services:
       - ./certbot/conf:/etc/letsencrypt
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-  
+
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
