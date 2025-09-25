@@ -13,8 +13,8 @@ services:
       - NODE_ENV=production
       - WEBHOOK_URL=https://geedcs.duckdns.org/
       - GENERIC_TIMEZONE=America/Sao_Paulo
-      # APENAS PLAYWRIGHT (mais limpo)
-      - NODE_FUNCTION_ALLOW_EXTERNAL=playwright
+      # APENAS PUPPETEER (mais limpo)
+      - NODE_FUNCTION_ALLOW_EXTERNAL=puppeteer,puppeteer-extra,puppeteer-extra-plugin-stealth,puppeteer-extra-plugin-user-preferences,puppeteer-extra-plugin-user-data-dir
 
       # --- CONFIGURAÇÕES DE PERFORMANCE E SEGURANÇA ---
       - N8N_ENCRYPTION_KEY='ff0h/OkaDXGNsmnPLarTFK6Cx0N4cDlg'
@@ -35,10 +35,13 @@ services:
       - N8N_COMMUNITY_PACKAGES_ENABLED=false
       - N8N_LOG_LEVEL=warn
       - N8N_TABLES_ENABLED=false
+      # Chromium do sistema para Puppeteer
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
       # Limita execuções simultâneas
       - EXECUTIONS_PROCESS=main
-      - EXECUTIONS_DATA_PRUNE=true
+      # Mantém histórico de execuções para debug
+      - EXECUTIONS_DATA_PRUNE=false
       - EXECUTIONS_DATA_MAX_AGE=1
 
       # Playwright/Puppeteer: sempre feche o browser após uso nos seus scripts

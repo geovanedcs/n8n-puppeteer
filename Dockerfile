@@ -19,13 +19,12 @@ RUN apk add --no-cache \
     libstdc++ \
     && rm -rf /var/cache/apk/*
 
-# Instala Playwright
-RUN npm install -g playwright
 
-# NÃO instala browsers do Playwright, usa o do sistema
-# Define variável para usar Chromium do sistema
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+# Instala Puppeteer e plugins stealth, user-preferences, user-data-dir
+RUN npm install -g puppeteer puppeteer-extra puppeteer-extra-plugin-stealth puppeteer-extra-plugin-user-preferences puppeteer-extra-plugin-user-data-dir
+
+# Define variável para usar Chromium do sistema no Puppeteer
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 USER node
 
